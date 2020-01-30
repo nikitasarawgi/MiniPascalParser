@@ -1,0 +1,453 @@
+program -> program_heading block_part .
+   | program_heading INTERFACE block_part .
+
+
+program_heading -> PROGRAM identifier ;
+   | PROGRAM identifier () identifier_list ) ;
+   | UNIT identifier ;
+
+identifier -> IDENT
+   
+
+block_part -> block compound_statement
+   
+
+block -> label_declaration_part block
+   | constant_declaration_part block
+   | type_definition_part block
+   | variable_definition_part block
+   | procedure_and_function_declaration_part block
+   | uses_units_part block
+   | IMPLEMENTATION block
+   | e
+   
+
+uses_units_part -> USES identifier_list ;
+
+label_declaration_part -> LABEL label label_add ;
+
+label_add -> , label label_add
+   | e 
+
+
+label -> unsigned_integer
+   
+
+constant_declaration_part -> CONST constant_definition ; constant_add
+   
+
+constant_add -> constant_definition ; constant_add
+   | e
+
+constant_definition -> identifier = constant
+   
+
+constant_char -> CHR ( unsigned_integer )
+   ;
+
+constant -> unsigned_number
+   | sign unsigned_number
+   | identifier
+   | sign identifier
+   | string
+   | constant_char
+   
+
+unsigned_number -> unsigned_integer
+   | unsigned_real
+   
+
+unsigned_integer-> NUM_INT
+   
+
+unsigned_real -> NUM_REAL
+   
+
+sign -> +
+   | -
+   
+
+bool -> TRUE
+   | FALSE
+
+
+string -> STRING_LITERAL
+
+
+type_definition_part -> TYPE type_definition ; type_add
+   
+
+type_add -> type_definition ; type_add
+   | 
+   e
+
+type_definition -> identifier = type 
+   | identifier = function_type 
+   | identifier = procedure_type
+   
+
+function_type -> FUNCTION formal_parameter_list : result_type
+   | FUNCTION : result_type
+   
+
+procedure_type -> procedure formal_parameter_list
+   | procedure
+   
+
+type -> simple_type
+   | structured_type
+   | pointer_type
+
+simple_type -> scalar_type
+   | subrange_type
+   | type_identifier
+   | string_type
+   
+
+scalar_type -> ( identifier_list )
+   
+
+subrange_type -> constant . . constant
+   
+
+type_identifier -> identifier
+   | CHAR 
+   | BOOLEAN
+   | INTEGER 
+   | REAL 
+   | STRING
+   
+
+structured_type -> PACKED unpacked_structure_typed_type
+   | unpacked_structure_typed_type
+   
+
+unpacked_structure_typed_type -> array_type
+   | record_type
+   | set_type
+   | file_type
+   
+
+string_type -> STRING [ identifier ]
+   | STRING [ unsigned_number ]
+
+
+array_type -> ARRAY [ type_list ] of component_type
+   | ARRAY (. type_list .) of component_type
+   
+
+type_list -> index_type index_add
+   
+
+index_add -> , index_type index_add
+   |
+   e
+
+index_type -> simple_type
+
+
+component_type -> type
+   
+
+record_type -> RECORD field_list end
+   | RECORD end
+
+field_list -> fixed_part
+   | fixed_part ; variant_part
+   | variant_part
+
+
+fixed_part -> record_section record_add
+   
+
+record_add -> ; record_section record_add
+   | 
+   e
+
+record_section -> identifier_list : type
+   
+
+variant_part -> case tag of variant variant_add
+   
+
+variant_add -> ; variant variant_add
+   |
+   e
+
+tag -> identifier : type_identifier
+   | type_identifier
+   e
+
+variant -> const_list : ( field_list )
+   
+
+set_type -> set of base_type
+   
+
+base_type -> simple_type
+   
+
+file_type -> file of type
+   | file
+   e
+
+pointer_type -> ^ type_identifier
+   
+
+variable_definition_part -> var variable_declaration variable_add ;
+   
+
+variable_add -> ; variable_declaration variable_add
+   |
+   e
+
+variable_declaration -> identifier_list : type
+   
+
+procedure_and_function_declaration_part -> procedure_or_function_declaration ;
+   
+
+procedure_or_function_declaration -> procedure_declaration
+   | function_declaration
+   e
+
+procedure_declaration -> procedure identifier ; block_part
+   | procedure identifier formal_parameter_list ; block_part
+   e
+
+formal_parameter_list -> ( formal_parameter_section formal_add )
+   
+
+formal_add -> ; formal_parameter_section formal_add
+   |
+   e
+
+formal_parameter_section -> parameter_group
+   | var parameter_group
+   | FUNCTION parameter_group
+   | procedure parameter_group
+   
+
+parameter_group -> identifier_list : type_identifier
+   ;
+
+identifier_list -> identifier identifier_add
+   ;
+
+identifier_add-> , identifier identifier_add
+   | 
+   e
+
+const_list -> constant const_add
+   
+
+const_add -> , constant const_add
+   | 
+   e
+
+function_declaration -> FUNCTION identifier : result_type ; block_part
+   | FUNCTION identifier formal_parameter_list : result_type ; block_part
+   
+
+
+result_type -> type_identifier
+   
+
+statement -> label : unlabelled_statement
+   | unlabelled_statement
+   
+
+unlabelled_statement -> simple_statement
+   | structured_statement
+   
+
+simple_statement -> assignment_statement
+   | procedure_statement
+   | goto_statement
+   | empty_statement
+   
+
+assignment_statement -> variable :=expression
+   
+
+variable -> @identifier variable_add
+   | identifier variable_add
+   
+
+variable_add -> [ expression expr_add ] variable_add
+   | (. expression expr_add .) variable_add
+   | . identifier variable_add
+   | ^variable_add
+   |
+   e
+
+expr_add -> , expression expr_add
+   |
+   e
+
+expression -> simple_expression relational_operator expression
+   | simple_expression
+   
+
+relational_operator -> =
+   | <>
+   | <
+   | <=
+   | >=
+   | >
+   | in
+   
+
+simple_expression -> term
+   | term additive_operator simple_expression
+   
+
+additive_operator -> +
+   | -
+   | or
+
+
+term -> signed_factor multiplicative_operator term
+   | signed_factor
+   
+
+multiplicative_operator -> *
+   | /
+   | %
+   | and
+   
+
+signed_factor -> + factor
+   | - factor
+   | factor
+   
+
+factor -> variable
+   | ( expression )
+   | function_designator
+   | unsigned_constant
+   | set
+   | not factor
+   | bool
+   
+
+unsigned_constant -> unsigned_number
+   | constant_char
+   | string
+   | nil
+   
+
+function_designator -> identifier ( parameter_list )
+   
+
+parameter_list -> actual_parameter parameter_add
+   
+
+parameter_add -> , actual_parameter parameter_add
+   | 
+   e
+
+set -> [ element_list ]
+   | (. element_list .)
+   
+
+element_list -> element element_add
+   |
+   e
+
+element_add -> , element element_add
+   |
+   
+
+element -> expression
+   | expression . . expression
+   
+
+procedure_statement -> identifier ( parameter_list )
+   | identifier 
+   
+
+actual_parameter -> expression actual_add
+   
+
+actual_add -> parameter_width actual_add
+   | 
+   e
+
+parameter_width -> : expression
+   
+
+goto_statement -> goto label
+   
+
+empty_statement -> e
+
+structured_statement -> compound_statement
+   | conditional_statement
+   | repetitive_statement
+   | with_statement
+   
+
+compound_statement -> begin statements end
+   
+
+statements -> statement statement_add
+   
+
+statement_add -> ; statement statement_add
+   |
+   e
+
+conditional_statement -> if_statement
+   | case_statement
+   
+
+if_statement -> if expression then statement else statement
+   | if expression then statement
+   
+
+case_statement -> case expression of case_list_element case_add ; else statements end
+   | case expression of case_list_element case_add end
+   
+
+case_add -> ; case_list_element case_add
+   |
+   e
+
+case_list_element -> const_list : statement
+   
+
+repetitive_statement -> while_statement
+   | repeat_statement
+   | for_statement
+   
+
+while_statement -> while expression do statement
+   ;
+
+repeat_statement
+   -> repeatstatements until expression
+   ;
+
+for_statement -> for identifier :=for_list do statement
+   
+
+for_list -> initial_value to final_value
+   | initial_value downto final_value
+   
+
+initial_value -> expression
+   
+
+final_value -> expression
+   
+
+with_statement -> with record_variable_list do statement
+   ;
+
+record_variable_list -> variable record_add
+   
+
+record_add -> , variable record_add
+   |
+   e
